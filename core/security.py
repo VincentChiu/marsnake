@@ -1,12 +1,9 @@
-import os, base64
 from utils.singleton import singleton
-from utils import common
-from utils.configuration import Kconfig
-from Crypto.Cipher import PKCS1_OAEP
-from Crypto.PublicKey import RSA
-from Crypto.Cipher import AES
+from utils import common, file_op
+from config import constant
+import os, base64, rsa
 
-PADDING = '{'
+PADDING = b&#39;{&#39;
 BLOCK_SIZE = 16
 
 # one-liner to sufficiently pad the text to be encrypted
@@ -17,39 +14,40 @@ class Ksecurity():
 	def __init__(self):
 		self.aes = None
 		self.iv = None
+	
+	def on_initializing(self, *args, **kwargs):
+		(self.pubkey, self.privkey) = rsa.newkeys(1024)
+		self.server_pubkey = rsa.PublicKey.load_pkcs1(self.read_server_publickey())
 
-	def init(self):
-		self.client_publickey = Kconfig().client_publickey
-		self.client_privatekey = Kconfig().client_privatekey
-
+		return True
+	
+	def read_server_publickey(self):
+		return file_op.cat(os.path.join(common.get_work_dir(), constant.SERVER_PUBLIC_KEY), &#34;r&#34;)
+		
 	def rsa_long_encrypt(self, msg, length = 100):
-		msg = msg.encode("utf8")
-		pubobj = RSA.importKey(Kconfig().server_publickey)
-		pubobj = PKCS1_OAEP.new(pubobj)
+		msg = msg.encode(&#34;utf8&#34;)
 		res = []
 
 		for i in range(0, len(msg), length):
-			res.append(pubobj.encrypt(msg[i : i + length]))
+			res.append(rsa.encrypt(msg[i : i + length], self.server_pubkey))
 
-		return "".join(res)
+		return b&#34;&#34;.join(res)
 
-	def rsa_long_decrypt(self, msg, length = 128):
-		privobj = RSA.importKey(self.client_privatekey)
-		privobj = PKCS1_OAEP.new(privobj)
+	def rsa_long_decrypt(self, crypto, length = 128):
 		res = []
 
-		for i in range(0, len(msg), length):
-			res.append(privobj.decrypt(msg[i : i + length]))
+		for i in range(0, len(crypto), length):
+			res.append(rsa.decrypt(crypto[i : i + length], self.privkey))
 
-		return "".join(res)
+		return b&#34;&#34;.join(res)
 
 	def get_pubkey(self):
-		return self.client_publickey
+		return self.pubkey.save_pkcs1().decode()
 
 	def swap_publickey_with_server(self, socket):
 		response = {
-			"cmd_id" : "10000",
-			"key" : self.get_pubkey()
+			&#34;cmd_id&#34; : &#34;10000&#34;,
+			&#34;key&#34; : self.get_pubkey()
 		}
 
 		socket.response(response)
@@ -58,7 +56,7 @@ class Ksecurity():
 		if aes and iv:
 			self.aes = aes
 			self.iv = iv
-	
+		
 	def can_aes_encrypt(self):
 		return self.aes and self.iv
 
@@ -67,9 +65,26 @@ class Ksecurity():
 		self.iv = None
 
 	def aes_encrypt(self, data):
-		aes_obj_enc = AES.new(self.aes, AES.MODE_CBC, self.iv)
-		return aes_obj_enc.encrypt(pad(data))
+		count = 0
+		encrypt = []
+
+		if common.is_python2x():
+			for i in data:
+				encrypt.append(chr(ord(i) ^ ord(self.aes[count % len(self.aes)])))
+				count += 1
+			
+			return b&#34;&#34;.join(encrypt)
+		else:
+			for i in data:
+				encrypt.append(i ^ self.aes[count % len(self.aes)])
+				count += 1
+
+			return bytes(encrypt)
+				
+		#aes_obj_enc = AES.new(self.aes, AES.MODE_CBC, self.iv)
+		#return aes_obj_enc.encrypt(pad(data))
 		
 	def aes_decrypt(self, encrypt):
-		aes_obj_enc = AES.new(self.aes, AES.MODE_CBC, self.iv)
-		return aes_obj_enc.decrypt(encrypt).rstrip(PADDING)
+		return self.aes_encrypt(encrypt)
+		#aes_obj_enc = AES.new(self.aes, AES.MODE_CBC, self.iv)
+		#return aes_obj_enc.decrypt(encrypt).rstrip(PADDING)

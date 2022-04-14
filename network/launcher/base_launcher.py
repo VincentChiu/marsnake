@@ -3,10 +3,10 @@ class base_launcher(object):
 		pass
 		
 	def init_argparse(self, args):
-		raise NotImplementedError("init_argparse launcher's method needs to be implemented")
+		raise NotImplementedError(&#34;init_argparse launcher&#39;s method needs to be implemented&#34;)
 		
 	def print_argparser(self):
 		self.parser.print_help()
 		
 	def start(self):
-		raise NotImplementedError("start launcher's method needs to be implemented")
+		raise NotImplementedError(&#34;start launcher&#39;s method needs to be implemented&#34;)

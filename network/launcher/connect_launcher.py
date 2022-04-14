@@ -1,34 +1,36 @@
 from network.launcher.base_launcher import base_launcher
 from network.ksocket import Ksocket
 from network.khttp import Khttp
-from utils.configuration import Kconfig
-from module.factory_module import Kmodules
-import argparse, time, traceback
+from config import constant
+from core.logger import Klogger
+from core.event import Kevent
+from core.db import Kdatabase
+import time
 
 class connect_launcher(base_launcher):
-	"connect_launcher"
 	def __init__(self):
 		self.socket = None
-		
+
 	def start(self):
 		while True:
 			try:
-				###For debug
-				if Kconfig().debug:
-					host, port = Kconfig().server.split(":")
-				else:
-					host, port, en_mods = Khttp().get_connection(Kconfig().server_url, Kconfig().credential)
-					Kmodules().unpacker(en_mods)
-					
-					print("return {} {}".format(host, port))
+				username = Kdatabase().get_obj(&#34;setting&#34;)[&#34;username&#34;]
+				
+				host, port = Khttp().get_connection(constant.SERVER_URL, username)
+				
+				if host and port:
+					Kevent().do_unpack()
 
-				self.socket = Ksocket(host, port, Kconfig().credential)
-				
-				self.socket.start()
-				self.socket.loop()
-				
+					self.socket = Ksocket(host, port, username)
+					self.socket.start()
+					self.socket.loop()
+				else:
+					Klogger().info(&#34;Reconnect to {} after 5s&#34;.format(marsnake_server))
+					time.sleep(5)
+					continue
+
 			except Exception as e:
-				traceback.print_exc()
+				Klogger().exception()
 
 			if self.socket:
 				self.socket.close()

@@ -1,27 +1,30 @@
 import sys
 from utils.singleton import singleton
-from network.launcher.connect_launcher import connect_launcher
-from network.launcher.proxy_launcher import proxy_launcher
 
 @singleton
 class Klauncher():
-	"class launcher"
+	&#34;class launcher&#34;
 	def __init__(self):
+		from network.launcher.connect_launcher import connect_launcher
+		
 		self.launcher = None
 		self.map = {
-			"connect" : connect_launcher,
-			"proxy" : proxy_launcher,
+			&#34;connect&#34; : connect_launcher
 		}
-		
-	def set_launcher(self, name):
+	
+	def on_initializing(self, *args, **kwargs):
+		name = &#34;connect&#34;
+
 		if not name in self.map.keys():
-			assert 0, "bad launcher name"
+			return False				#assert 0, &#34;bad launcher name&#34;
 			
 		self.launcher = self.map[name]()
 		
-	def get_names(self):
-		return self.map.keys()
+		return True
 		
-	def start(self):
+	def on_start(self, *args, **kwargs):
 		if self.launcher:
 			self.launcher.start()
+
+	def get_names(self):
+		return self.map.keys()
