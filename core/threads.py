@@ -5,28 +5,28 @@ import inspect
 import ctypes
 
 def _async_raise(tid, exctype):
-	&#34;&#34;&#34;raises the exception, performs cleanup if needed&#34;&#34;&#34;
+	"""raises the exception, performs cleanup if needed"""
 	if not inspect.isclass(exctype):
-		raise TypeError(&#34;Only types can be raised (not instances)&#34;)
+		raise TypeError("Only types can be raised (not instances)")
 
 	res = ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, ctypes.py_object(exctype))
 
 	if res == 0:
-		raise ValueError(&#34;invalid thread id&#34;)
+		raise ValueError("invalid thread id")
 	elif res != 1:
-		# &#34;&#34;&#34;if it returns a number greater than one, you&#39;re in trouble,
-		# and you should call it again with exc=NULL to revert the effect&#34;&#34;&#34;
+		# """if it returns a number greater than one, you're in trouble,
+		# and you should call it again with exc=NULL to revert the effect"""
 		ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, 0)
-		raise SystemError(&#34;PyThreadState_SetAsyncExc failed&#34;)
+		raise SystemError("PyThreadState_SetAsyncExc failed")
 
 class Thread(threading.Thread):
 	def _get_my_tid(self):
-		&#34;&#34;&#34;determines this (self&#39;s) thread id&#34;&#34;&#34;
+		"""determines this (self's) thread id"""
 		if not self.isAlive():
-			raise threading.ThreadError(&#34;the thread is not active&#34;)
+			raise threading.ThreadError("the thread is not active")
 
 		# do we have it cached?
-		if hasattr(self, &#34;_thread_id&#34;):
+		if hasattr(self, "_thread_id"):
 			return self._thread_id
 
 		# no, look for it in the _active dict
@@ -35,15 +35,15 @@ class Thread(threading.Thread):
 				self._thread_id = tid
 				return tid
 
-		raise AssertionError(&#34;could not determine the thread&#39;s id&#34;)
+		raise AssertionError("could not determine the thread's id")
 
 	def raise_exc(self, exctype):
-		&#34;&#34;&#34;raises the given exception type in the context of this thread&#34;&#34;&#34;
+		"""raises the given exception type in the context of this thread"""
 		_async_raise(self._get_my_tid(), exctype)
 
 	def terminate(self):
-		&#34;&#34;&#34;raises SystemExit in the context of the given thread, which should
-		cause the thread to exit silently (unless caught)&#34;&#34;&#34;
+		"""raises SystemExit in the context of the given thread, which should
+		cause the thread to exit silently (unless caught)"""
 		self.raise_exc(SystemExit)
 
 @singleton
@@ -77,7 +77,7 @@ class Kthreads(object):
 				if allok:
 					break
 			except KeyboardInterrupt:
-				print(&#34;Press [ENTER] to interrupt the job&#34;)
+				print("Press [ENTER] to interrupt the job")
 				#self.interrupt_all()
 				break
 

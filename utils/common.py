@@ -2,14 +2,14 @@ import sys, socket, os, platform, locale, re, psutil, glob, subprocess, multipro
 from config import constant
 
 system = sys.platform
-os_encoding = locale.getpreferredencoding() or &#34;utf8&#34;
-work_dir = &#34;&#34;
+os_encoding = locale.getpreferredencoding() or "utf8"
+work_dir = ""
 
 def fork_process(target, args):
 	return multiprocessing.Process(target = target, args = args)
 
 def exec_command(cmd):
-	cmdstr = &#39; &#39;.join(cmd)
+	cmdstr = ' '.join(cmd)
 	process = subprocess.Popen(cmdstr, stdout = subprocess.PIPE, stderr = subprocess.PIPE, shell = True)
 	stdout, stderr = process.communicate()
 
@@ -17,7 +17,7 @@ def exec_command(cmd):
 		return str(stdout).strip() if is_python2x() else stdout.decode(os_encoding).strip(), True, process.returncode
 	else:
 		return str(stderr).strip() if is_python2x() else stderr.decode(os_encoding).strip(), False, process.returncode
-		#raise Exception(&#34;stderr: %s&#34; % str(stderr))
+		#raise Exception("stderr: %s" % str(stderr))
 
 def create_uuid():
 	return str(uuid.uuid1())
@@ -41,19 +41,19 @@ def decode2utf8(data):
 			return data
 
 def print_obj(obj):
-	print(&#39;\n&#39;.join([&#39;%s:%s&#39; % item for item in obj.__dict__.items()]))
+	print('\n'.join(['%s:%s' % item for item in obj.__dict__.items()]))
 
 def add_module_path(path):
 	sys.path.append(os.path.join(get_work_dir(), path))
 
 def print2hex(s):
-	print(&#34;:&#34;.join(&#34;{:02x}&#34;.format(ord(c)) for c in s))
+	print(":".join("{:02x}".format(ord(c)) for c in s))
 
 def is_python2x():
-	return sys.version_info  &lt; (3, 0)
+	return sys.version_info  < (3, 0)
 
 def setdefaultencoding(coding):
-	if sys.version_info  &lt; (3, 0):
+	if sys.version_info  < (3, 0):
 		reload(sys)
 		sys.setdefaultencoding(coding)
 
@@ -63,11 +63,11 @@ def python_version(version):
 def set_work_dir():
 	global work_dir
 	
-	if hasattr(sys, &#34;frozen&#34;):# synchronize with pyloader&#39;s initialization.py
-		#work_dir = os.path.abspath(os.path.join(os.path.dirname(os.__file__),&#39;..&#39;))
+	if hasattr(sys, "frozen"):# synchronize with pyloader's initialization.py
+		#work_dir = os.path.abspath(os.path.join(os.path.dirname(os.__file__),'..'))
 		work_dir = os.path.abspath(os.path.join(os.path.dirname(os.__file__)))
 	else:
-		work_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), &#34;..&#34;))
+		work_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 def get_work_dir():
 	global work_dir
@@ -77,7 +77,7 @@ def get_data_location():
 	data_dir = None
 
 	if is_windows():
-		data_location = os.getenv(&#39;APPDATA&#39;)
+		data_location = os.getenv('APPDATA')
 
 		if not os.path.exists(data_location):
 			try:
@@ -85,7 +85,7 @@ def get_data_location():
 				data_location = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0)
 
 			except ImportError: # quick semi-nasty fallback for non-windows/win32com case
-				data_location = os.path.expanduser(&#34;~&#34;)
+				data_location = os.path.expanduser("~")
 
 		data_dir = os.path.join(data_location, constant.APP_NAME)
 
@@ -93,8 +93,8 @@ def get_data_location():
 			os.mkdir(data_dir)
 
 	if is_linux() or is_darwin():
-		home = path_translate(&#34;~&#34;)
-		data_dir = os.path.join(home, &#34;.{}&#34;.format(constant.APP_NAME))
+		home = path_translate("~")
+		data_dir = os.path.join(home, ".{}".format(constant.APP_NAME))
 
 		if not os.path.exists(data_dir):
 			os.mkdir(data_dir)
@@ -103,18 +103,18 @@ def get_data_location():
 
 def is_linux():
 	global system
-	return system == &#34;linux2&#34; or system == &#34;linux&#34;
+	return system == "linux2" or system == "linux"
 
 def is_windows():
 	global system
-	return system == &#34;win32&#34;
+	return system == "win32"
 
 def is_darwin():
 	global system
-	return system == &#34;darwin&#34;
+	return system == "darwin"
 
 def is_x86_64():
-	return platform.machine() == &#39;x86_64&#39;
+	return platform.machine() == 'x86_64'
 
 def extend_at_front(array_src, maxi, cons):
 	array_dst = array_src[-maxi : len(array_src)]
@@ -128,23 +128,23 @@ def extend_at_front(array_src, maxi, cons):
 	return array_dst
 
 def boolstr_to_bool(value):
-	&#34;&#34;&#34;Convert a string boolean to a Python boolean&#34;&#34;&#34;
-	if &#39;true&#39; == value.lower():
+	"""Convert a string boolean to a Python boolean"""
+	if 'true' == value.lower():
 		return True
 
-	if &#39;false&#39; == value.lower():
+	if 'false' == value.lower():
 		return False
 
-	raise RuntimeError(&#34;Invalid boolean: &#39;%s&#39;&#34; % value)
+	raise RuntimeError("Invalid boolean: '%s'" % value)
 
 def do_get_ip_gateway():
-	ip = &#39;127.0.0.1&#39;
+	ip = '127.0.0.1'
 	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 	s.setblocking(0)
 
 	try:
-		# doesn&#39;t even have to be reachable
-		s.connect((&#39;10.255.255.255&#39;, 1))
+		# doesn't even have to be reachable
+		s.connect(('10.255.255.255', 1))
 		ip = s.getsockname()[0]
 	except:
 		pass
@@ -163,7 +163,7 @@ def get_ip_gateway():
 	elif is_darwin():
 		return do_get_ip_gateway()
 
-	return &#34;&#34;
+	return ""
 
 def get_distribution():
 
@@ -173,22 +173,22 @@ def get_distribution():
 		else:
 			import winreg as _winreg
 
-		reg_key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, &#34;SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion&#34;)
-		info = _winreg.QueryValueEx(reg_key, &#34;ProductName&#34;)[0]
+		reg_key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion")
+		info = _winreg.QueryValueEx(reg_key, "ProductName")[0]
 
 		if info:
 			return info
 		else:
-			return &#34;Windows {}&#34;.format(platform.win32_ver()[0])
+			return "Windows {}".format(platform.win32_ver()[0])
 
 	elif is_linux():
 		from utils import lib
-		return &#34;{} {}&#34;.format(*(lib.detect_distribution()))
+		return "{} {}".format(*(lib.detect_distribution()))
 
 	elif is_darwin():
-		return &#34;MacOS X {}&#34;.format(platform.mac_ver()[0])
+		return "MacOS X {}".format(platform.mac_ver()[0])
 
-	return &#34;&#34;
+	return ""
 
 def grep(line, pattern):
 	sub = re.findall(pattern, line)
@@ -196,18 +196,18 @@ def grep(line, pattern):
 	if len(sub) != 0:
 		return sub[0], len(sub)
 	else:
-		return &#34;&#34;, 0
+		return "", 0
 
-def size_human_readable(num, suffix = &#39;B&#39;):
+def size_human_readable(num, suffix = 'B'):
 	try:
 		num = int(num)
-		for unit in [&#39;&#39;,&#39;Ki&#39;,&#39;Mi&#39;,&#39;Gi&#39;,&#39;Ti&#39;,&#39;Pi&#39;,&#39;Ei&#39;,&#39;Zi&#39;]:
-			if abs(num) &lt; 1024.0:
-				return &#34;%3.1f %s%s&#34; % (num, unit, suffix)
+		for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
+			if abs(num) < 1024.0:
+				return "%3.1f %s%s" % (num, unit, suffix)
 			num /= 1024.0
-		return &#34;%.1f %s%s&#34; % (num, &#39;Yi&#39;, suffix)
+		return "%.1f %s%s" % (num, 'Yi', suffix)
 	except:
-		return &#39;0.00 B&#39;
+		return '0.00 B'
 
 def try_unicode(path):
 	if not isinstance(path, unicode if is_python2x() else str):
@@ -222,13 +222,13 @@ def is_program_running(program):
 	program = program.lower()
 
 	if is_linux():
-		&#34;&#34;&#34;Check whether program is running&#34;&#34;&#34;
-		for filename in glob.iglob(&#34;/proc/*/exe&#34;):
+		"""Check whether program is running"""
+		for filename in glob.iglob("/proc/*/exe"):
 			try:
 				target = os.path.realpath(filename)
 			except TypeError:
 				# happens, for example, when link points to
-				# &#39;/etc/password\x00 (deleted)&#39;
+				# '/etc/password\x00 (deleted)'
 				continue
 			except OSError:
 				# 13 = permission denied
@@ -241,10 +241,10 @@ def is_program_running(program):
 
 	elif is_darwin():
 		def run_ps():
-			subprocess.check_output([&#34;ps&#34;, &#34;aux&#34;, &#34;-c&#34;])
+			subprocess.check_output(["ps", "aux", "-c"])
 
 		try:
-			processess = (re.split(r&#34;\s+&#34;, p, 10)[10] for p in run_ps().split(&#34;\n&#34;) if p != &#34;&#34;)
+			processess = (re.split(r"\s+", p, 10)[10] for p in run_ps().split("\n") if p != "")
 			next(processess)  # drop the header
 			return program in processess
 		except IndexError:
@@ -263,13 +263,13 @@ def is_program_running(program):
 		return False
 
 def get_listen_port(ports):
-	conns = psutil.net_connections(kind = &#34;inet&#34;)
+	conns = psutil.net_connections(kind = "inet")
 	ret = []
 
 	for conn in conns:
 		fd, family, _type, laddr, raddr, status, pid = conn
 
-		if status == &#34;LISTEN&#34;:
+		if status == "LISTEN":
 			port = laddr[1]
 
 			if port in ports:
@@ -279,10 +279,10 @@ def get_listen_port(ports):
 
 def is_kernel_thread(proc):
 	if is_linux():
-		&#34;&#34;&#34;Return True if proc is a kernel thread, False instead.&#34;&#34;&#34;
+		"""Return True if proc is a kernel thread, False instead."""
 		try:
 			return os.getpgid(proc.pid) == 0
-		# Python &gt;= 3.3 raises ProcessLookupError, which inherits OSError
+		# Python >= 3.3 raises ProcessLookupError, which inherits OSError
 		except OSError:
 			# return False is process is dead
 			return False
@@ -294,7 +294,7 @@ def is_kernel_thread(proc):
 
 #5.2 M
 def sizestring2int(sstr):
-	pattern = re.compile(r&#34;(\S+)\s(\w)&#34;)
+	pattern = re.compile(r"(\S+)\s(\w)")
 	match = pattern.match(sstr.strip())
 	size = 0
 
@@ -302,9 +302,9 @@ def sizestring2int(sstr):
 		size = float(match.groups()[0])
 		unit = match.groups()[1].lower()
 
-		if unit == &#39;m&#39;:
+		if unit == 'm':
 			size *= 1024 * 1024
-		elif unit == &#39;k&#39;:
+		elif unit == 'k':
 			size *= 1024
 
 	return int(size)
@@ -312,30 +312,30 @@ def sizestring2int(sstr):
 # os.path.expandvars does not work well with non-ascii Windows paths.
 # This is a unicode-compatible reimplementation of that function.
 def expandvars(var):
-	&#34;&#34;&#34;Expand environment variables.
+	"""Expand environment variables.
 
 	Return the argument with environment variables expanded. Substrings of the
 	form $name or ${name} or %name% are replaced by the value of environment
-	variable name.&#34;&#34;&#34;
+	variable name."""
 	if is_python2x() and isinstance(var, str):
-		final = var.decode(&#39;utf-8&#39;)
+		final = var.decode('utf-8')
 	else:
 		final = var
 
-	if &#39;posix&#39; == os.name:
+	if 'posix' == os.name:
 		final = os.path.expandvars(final)
-	elif &#39;nt&#39; == os.name:
+	elif 'nt' == os.name:
 		if sys.version_info[0] == 2:
 			import _winreg
 		else:
 			import winreg as _winreg
-		if final.startswith(&#39;${&#39;):
-			final = re.sub(r&#39;\$\{(.*?)\}(?=$|\\)&#39;,
-						   lambda x: &#39;%%%s%%&#39; % x.group(1),
+		if final.startswith('${'):
+			final = re.sub(r'\$\{(.*?)\}(?=$|\\)',
+						   lambda x: '%%%s%%' % x.group(1),
 						   final)
-		elif final.startswith(&#39;$&#39;):
-			final = re.sub(r&#39;\$(.*?)(?=$|\\)&#39;,
-						   lambda x: &#39;%%%s%%&#39; % x.group(1),
+		elif final.startswith('$'):
+			final = re.sub(r'\$(.*?)(?=$|\\)',
+						   lambda x: '%%%s%%' % x.group(1),
 						   final)
 		final = _winreg.ExpandEnvironmentStrings(final)
 	return final
@@ -350,46 +350,46 @@ def path_translate(path):
 # Windows paths have to be unicode, but os.path.expanduser does not support it.
 # This is a unicode-compatible reimplementation of that function.
 def expanduser(path):
-	&#34;&#34;&#34;Expand the path with the home directory.
+	"""Expand the path with the home directory.
 
-	Return the argument with an initial component of &#34;~&#34; replaced by
-	that user&#39;s home directory.
-	&#34;&#34;&#34;
+	Return the argument with an initial component of "~" replaced by
+	that user's home directory.
+	"""
 	if is_python2x() and isinstance(path, str):
-		final = path.decode(&#39;utf-8&#39;)
+		final = path.decode('utf-8')
 	else:
 		final = path
 
 	# If does not begin with tilde, do not alter.
-	if len(path) == 0 or not &#39;~&#39; == path[0]:
+	if len(path) == 0 or not '~' == path[0]:
 		return final
 
-	if &#39;posix&#39; == os.name:
+	if 'posix' == os.name:
 		final = os.path.expanduser(final)
-	elif &#39;nt&#39; == os.name:
+	elif 'nt' == os.name:
 		found = False
-		for env in [u&#39;%USERPROFILE%&#39;, u&#39;%HOME%&#39;]:
+		for env in [u'%USERPROFILE%', u'%HOME%']:
 			if env in os.environ:
 				home = expandvars(env)
 				found = True
 				break
 		if not found:
-			h_drive = expandvars(u&#39;%HOMEDRIVE%&#39;)
-			h_path = expandvars(u&#39;%HOMEPATH%&#39;)
+			h_drive = expandvars(u'%HOMEDRIVE%')
+			h_path = expandvars(u'%HOMEPATH%')
 			home = os.path.join(h_drive, h_path)
-		final = final.replace(&#39;~user/&#39;, &#39;&#39;)
-		final = final.replace(&#39;~/&#39;, &#39;&#39;)
-		final = final.replace(&#39;~&#39;, &#39;&#39;)
+		final = final.replace('~user/', '')
+		final = final.replace('~/', '')
+		final = final.replace('~', '')
 		final = os.path.join(home, final)
 	return final
 
 def check_programs_installed(program):
-	delimiter = &#39;:&#39;
+	delimiter = ':'
 
-	if &#39;nt&#39; == os.name:
-		delimiter = &#39;;&#39;
+	if 'nt' == os.name:
+		delimiter = ';'
 
-	for path in os.environ[&#34;PATH&#34;].split(delimiter):
+	for path in os.environ["PATH"].split(delimiter):
 		if os.path.exists(path):
 			try:
 				for x in os.listdir(path):
@@ -406,7 +406,7 @@ def check_programs_installed(program):
 def contain_in_string(containVar, stringVar):
 	try:
 		if isinstance(stringVar, str):
-			if stringVar.find(containVar) &gt; -1:
+			if stringVar.find(containVar) > -1:
 				return True
 			else:
 				return False

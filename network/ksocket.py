@@ -15,8 +15,8 @@ class stream():
 		self.index = 0
 
 	def write(self, data):
-		if self.index + len(data) &gt; self.size:
-			Klogger().error(&#34;index:{} len(data):{} size:{}&#34;.format(self.index, len(data), self.size))
+		if self.index + len(data) > self.size:
+			Klogger().error("index:{} len(data):{} size:{}".format(self.index, len(data), self.size))
 			raise
 
 		for i in range(len(data)):
@@ -27,7 +27,7 @@ class stream():
 		return self.index
 
 	def get_data(self, start, wanted):
-		if self.index &lt; start + wanted:
+		if self.index < start + wanted:
 			return None
 
 		return self.buffer[start:start + wanted]
@@ -38,13 +38,13 @@ class stream():
 		if diff == 0:
 			self.index = 0
 			return
-		elif diff &gt; 0:
+		elif diff > 0:
 			for i in range(diff):
 				self.buffer[i] = self.buffer[total + i]
 
 			self.index = diff
 		else:
-			raise &#34;diff({}) &lt; 0&#34;.format(diff)
+			raise "diff({}) < 0".format(diff)
 
 class Ksocket():
 	def __init__(self, host, port, userid, nodelay = False, keepalive = True):
@@ -75,11 +75,11 @@ class Ksocket():
 		if self.keepalive:
 			sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
 
-		if hasattr(socket, &#34;TCP_KEEPIDLE&#34;) and hasattr(socket, &#34;TCP_KEEPINTVL&#34;) and hasattr(socket, &#34;TCP_KEEPCNT&#34;):
+		if hasattr(socket, "TCP_KEEPIDLE") and hasattr(socket, "TCP_KEEPINTVL") and hasattr(socket, "TCP_KEEPCNT"):
 			sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, 1 * 60)
 			sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, 30)
 			sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPCNT, 5)
-		elif hasattr(socket, &#34;SIO_KEEPALIVE_VALS&#34;):
+		elif hasattr(socket, "SIO_KEEPALIVE_VALS"):
 			sock.ioctl(socket.SIO_KEEPALIVE_VALS, (1, 1 * 60 * 1000, 5 * 60 * 1000))
 
 		self.sock = sock
@@ -104,15 +104,15 @@ class Ksocket():
 	def handle_package(self):
 		recv_len = self.input.get_len()
 
-		if recv_len &lt; 36:
+		if recv_len < 36:
 			return False
 
 		plen = self.input.get_data(32, 4)
-		plen = struct.unpack(&#39;&gt;I&#39;, plen)[0]
+		plen = struct.unpack('>I', plen)[0]
 
 		total = 32 + 4 + plen + 16
 
-		if recv_len &lt; total:
+		if recv_len < total:
 			return False
 
 		payload = self.input.get_data(36, plen)
@@ -125,26 +125,26 @@ class Ksocket():
 	def handle_package_2(self, payload):
 		if self.recv_count == 0:
 			payload = json.loads(payload)
-			Klogger().info(&#34;recv:{}&#34;.format(payload))
+			Klogger().info("recv:{}".format(payload))
 
-			if payload[&#34;cmd_id&#34;] == &#34;10000&#34;:
+			if payload["cmd_id"] == "10000":
 				Ksecurity().swap_publickey_with_server(self)
 
 		elif self.recv_count == 1:
 			payload = json.loads(payload)
-			Klogger().info(&#34;recv:{}&#34;.format(payload))
+			Klogger().info("recv:{}".format(payload))
 
-			if payload[&#34;cmd_id&#34;] == &#34;1000&#34;:
-				payload[&#34;user_id&#34;] = self.userid
+			if payload["cmd_id"] == "1000":
+				payload["user_id"] = self.userid
 				Kmodules().create(self, payload)
 		else:
 			payload = Ksecurity().aes_decrypt(payload)
 			payload = json.loads(payload)
 
-			if payload[&#34;cmd_id&#34;] in [&#34;1000&#34;]:
-				Klogger().info(&#34;recv:{}&#34;.format(payload))
+			if payload["cmd_id"] in ["1000"]:
+				Klogger().info("recv:{}".format(payload))
 
-			#if payload[&#34;args&#34;][&#34;user_id&#34;] == self.userid:
+			#if payload["args"]["user_id"] == self.userid:
 			Kmodules().create(self, payload)
 
 		self.recv_count += 1
@@ -152,28 +152,28 @@ class Ksocket():
 	def response(self, payload):
 		try:
 			with self.lock:
-				if payload[&#34;cmd_id&#34;] in [&#34;1000&#34;]:
+				if payload["cmd_id"] in ["1000"]:
 					Klogger().info(payload)
 
-				prefix = struct.pack(&#34;32s&#34;, Krandom().purely(32).encode(&#34;ascii&#34;))
-				suffix = struct.pack(&#34;16s&#34;, Krandom().purely(16).encode(&#34;ascii&#34;))
-				payload = json.dumps(payload).encode(&#34;ascii&#34;)
+				prefix = struct.pack("32s", Krandom().purely(32).encode("ascii"))
+				suffix = struct.pack("16s", Krandom().purely(16).encode("ascii"))
+				payload = json.dumps(payload).encode("ascii")
 
 				if Ksecurity().can_aes_encrypt():
 					payload = Ksecurity().aes_encrypt(payload)
 
-				payload_len = struct.pack(&#34;&lt;I&#34;, len(payload))
+				payload_len = struct.pack("<I", len(payload))
 
 				data = prefix + payload_len + payload + suffix
 				datalen = len(data)
 				send_bytes = 0
 
-				while send_bytes &lt; datalen:
+				while send_bytes < datalen:
 					send_bytes += self.sock.send(data[send_bytes:])
 
 		except Exception as e:
 			Klogger().exception()
 
 	def close(self):
-		if hasattr(self, &#34;sock&#34;):
+		if hasattr(self, "sock"):
 			self.sock.close()

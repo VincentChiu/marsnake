@@ -1,2 +1,2 @@
 #!/bin/bash
-find . | grep -E &#34;(__pycache__|\.pyc|\.pyo$)&#34; | xargs rm -rf
+find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf

@@ -13,26 +13,26 @@ class Khttp():
 		host = None
 		port = None
 
-		data = &#34;{};{}&#34;.format(userID, Ksecurity().get_pubkey())
+		data = "{};{}".format(userID, Ksecurity().get_pubkey())
 		encrypt = Ksecurity().rsa_long_encrypt(data)
 
-		Klogger().info(&#34;Request to Web server {} userid:{}&#34;.format(addr, userID))
-		status, data = net_op.create_http_request(addr, &#34;POST&#34;, &#34;/get_logic_conn&#34;, encrypt)
-		Klogger().info(&#34;Get Response From Gateway server status({})&#34;.format(status))
+		Klogger().info("Request to Web server {} userid:{}".format(addr, userID))
+		status, data = net_op.create_http_request(addr, "POST", "/get_logic_conn", encrypt)
+		Klogger().info("Get Response From Gateway server status({})".format(status))
 
 		if status == 200:
 			data = json.loads(data)
 			
-			if data[&#34;code&#34;] == 0:
-				destination = Ksecurity().rsa_long_decrypt(base64.b64decode(data[&#34;data&#34;]))
+			if data["code"] == 0:
+				destination = Ksecurity().rsa_long_decrypt(base64.b64decode(data["data"]))
 
-				if b&#34;:&#34; in destination:
-					host, port = destination.split(b&#34;:&#34;, 1)
-					host = host.decode(&#34;ascii&#34;)
-					port = port.decode(&#34;ascii&#34;)
+				if b":" in destination:
+					host, port = destination.split(b":", 1)
+					host = host.decode("ascii")
+					port = port.decode("ascii")
 
-				Klogger().info(&#34;Logic Server Host:{} Port:{}&#34;.format(host, port))
+				Klogger().info("Logic Server Host:{} Port:{}".format(host, port))
 			else:
-				Klogger().info(&#34;Connect to Web server failed:{}&#34;.format(data[&#34;msg&#34;]))
+				Klogger().info("Connect to Web server failed:{}".format(data["msg"]))
 
 		return host, port

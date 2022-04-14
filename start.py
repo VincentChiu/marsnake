@@ -9,7 +9,7 @@ import traceback
 def python_main(child_end):
 	try:
 		common.set_work_dir()
-		common.setdefaultencoding(&#34;utf8&#34;)
+		common.setdefaultencoding("utf8")
 
 		Kevent().init_signal()
 
@@ -25,5 +25,5 @@ def python_main(child_end):
 	except Exception as e:
 		traceback.print_exc(file = sys.stdout)
 
-if __name__ == &#39;__main__&#39;:
+if __name__ == '__main__':
 	python_main(None)

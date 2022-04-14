@@ -3,20 +3,20 @@ from utils.singleton import singleton
 
 @singleton
 class Klauncher():
-	&#34;class launcher&#34;
+	"class launcher"
 	def __init__(self):
 		from network.launcher.connect_launcher import connect_launcher
 		
 		self.launcher = None
 		self.map = {
-			&#34;connect&#34; : connect_launcher
+			"connect" : connect_launcher
 		}
 	
 	def on_initializing(self, *args, **kwargs):
-		name = &#34;connect&#34;
+		name = "connect"
 
 		if not name in self.map.keys():
-			return False				#assert 0, &#34;bad launcher name&#34;
+			return False				#assert 0, "bad launcher name"
 			
 		self.launcher = self.map[name]()
 		

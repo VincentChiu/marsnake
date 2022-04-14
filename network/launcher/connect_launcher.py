@@ -14,7 +14,7 @@ class connect_launcher(base_launcher):
 	def start(self):
 		while True:
 			try:
-				username = Kdatabase().get_obj(&#34;setting&#34;)[&#34;username&#34;]
+				username = Kdatabase().get_obj("setting")["username"]
 				
 				host, port = Khttp().get_connection(constant.SERVER_URL, username)
 				
@@ -25,7 +25,7 @@ class connect_launcher(base_launcher):
 					self.socket.start()
 					self.socket.loop()
 				else:
-					Klogger().info(&#34;Reconnect to {} after 5s&#34;.format(marsnake_server))
+					Klogger().info("Reconnect to {} after 5s".format(marsnake_server))
 					time.sleep(5)
 					continue
 

@@ -3,7 +3,7 @@ from utils import common, file_op
 from config import constant
 import os, base64, rsa
 
-PADDING = b&#39;{&#39;
+PADDING = b'{'
 BLOCK_SIZE = 16
 
 # one-liner to sufficiently pad the text to be encrypted
@@ -22,16 +22,16 @@ class Ksecurity():
 		return True
 	
 	def read_server_publickey(self):
-		return file_op.cat(os.path.join(common.get_work_dir(), constant.SERVER_PUBLIC_KEY), &#34;r&#34;)
+		return file_op.cat(os.path.join(common.get_work_dir(), constant.SERVER_PUBLIC_KEY), "r")
 		
 	def rsa_long_encrypt(self, msg, length = 100):
-		msg = msg.encode(&#34;utf8&#34;)
+		msg = msg.encode("utf8")
 		res = []
 
 		for i in range(0, len(msg), length):
 			res.append(rsa.encrypt(msg[i : i + length], self.server_pubkey))
 
-		return b&#34;&#34;.join(res)
+		return b"".join(res)
 
 	def rsa_long_decrypt(self, crypto, length = 128):
 		res = []
@@ -39,15 +39,15 @@ class Ksecurity():
 		for i in range(0, len(crypto), length):
 			res.append(rsa.decrypt(crypto[i : i + length], self.privkey))
 
-		return b&#34;&#34;.join(res)
+		return b"".join(res)
 
 	def get_pubkey(self):
 		return self.pubkey.save_pkcs1().decode()
 
 	def swap_publickey_with_server(self, socket):
 		response = {
-			&#34;cmd_id&#34; : &#34;10000&#34;,
-			&#34;key&#34; : self.get_pubkey()
+			"cmd_id" : "10000",
+			"key" : self.get_pubkey()
 		}
 
 		socket.response(response)
@@ -73,7 +73,7 @@ class Ksecurity():
 				encrypt.append(chr(ord(i) ^ ord(self.aes[count % len(self.aes)])))
 				count += 1
 			
-			return b&#34;&#34;.join(encrypt)
+			return b"".join(encrypt)
 		else:
 			for i in data:
 				encrypt.append(i ^ self.aes[count % len(self.aes)])
